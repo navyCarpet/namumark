@@ -1,0 +1,50 @@
+{
+  "name": "namumark",
+  "version": "0.0.1-dev",
+  "description": "A namumark parser",
+  "main": "./lib/marked.esm.js",
+  "module": "./lib/marked.esm.js",
+  "browser": "./lib/marked.umd.js",
+  "types": "./lib/marked.d.ts",
+  "scripts": {
+    "build": "npm run build:esbuild && npm run build:types",
+    "build:esbuild": "node esbuild.config.js",
+    "build:types": "tsc && dts-bundle-generator --export-referenced-types --project tsconfig.json -o lib/marked.d.ts src/marked.ts",
+    "test": "node test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/navyCarpet/namumark.git"
+  },
+  "files": [
+    "lib/"
+  ],
+  "keywords": [
+    "namumark",
+    "namuwiki",
+    "theseed"
+  ],
+  "tags": [
+    "namumark",
+    "namuwiki",
+    "theseed"
+  ],
+  "author": "navyCarpet",
+  "license": "MIT",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/navyCarpet/namumark/issues"
+  },
+  "homepage": "https://github.com/navyCarpet/namumark#readme",
+  "devDependencies": {
+    "@types/node": "^24.9.1",
+    "dts-bundle-generator": "^9.5.1",
+    "esbuild": "^0.25.11",
+    "esbuild-plugin-umd-wrapper": "^3.0.0",
+    "highlight.js": "^11.11.1",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "validate-color": "^2.2.4"
+  }
+}
