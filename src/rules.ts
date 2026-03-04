@@ -79,7 +79,7 @@ export const other = {
   listItemRegex: (bull: string) => new RegExp(`^ (${bull})(#\\d+)?`),
   nextBulletRegex: (indent: number) => new RegExp(`^ {0,${Math.min(3, indent - 1)}}(?:[*+-]|\\d{1,9}[.)])((?:[ \t][^\\n]*)?(?:\\n|$))`),
   endInlineRegex: (start: string) => new RegExp(`^(?:${escapeRegExp(start)}|\\n)`),
-  inlineText: (end: RegExp) => edit(/^.(?:(?!end)[^\\_\^,\-~\[{'#\n])*/).replace('end', end).getRegex()
+  inlineText: (end: RegExp) => edit(/^[\s\S](?:(?!end)[^\\_\^,\-~\[{'#\n])*/).replace('end', end).getRegex()
 };
 
 /**
