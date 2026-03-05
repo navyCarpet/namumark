@@ -71,7 +71,8 @@ export namespace Tokens {
     type: 'macro';
     raw: string;
     name: string;
-    argument?: { [key: string]: string };
+    argument?: Record<string, string>;
+    target?: string;
   }
 
   export interface Indent {
@@ -256,13 +257,13 @@ export namespace Tokens {
     type: 'table';
     raw: string;
     rows: TableCell[][];
-    attrs: {[key: string]: string};
+    attrs: Record<string, string>;
   }
 
   export interface TableCell {
     text: string;
     tokens: Token[];
-    option: {[key: string]: string};
+    option: Record<string, string>;
     // align: 'center' | 'left' | 'right' | null;
     // colspan: number;
   }

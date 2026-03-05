@@ -174,7 +174,7 @@ export class _Renderer<ParserOutput = string, RendererOutput = string> {
     return '<br>' as RendererOutput;
   }
 
-  macro({ name }: Tokens.Macro): RendererOutput {
+  macro({ name, target, argument }: Tokens.Macro): RendererOutput {
     switch (name) {
       case 'tableofcontents':
         return `<div class="wiki-macro-toc"><div class="toc-indent"></div></div>` as RendererOutput;
@@ -187,6 +187,8 @@ export class _Renderer<ParserOutput = string, RendererOutput = string> {
       case 'date':
         const now = new Date();
         return `<time date-format='Y-m-d H:i:sO' datetime='${now.toISOString()}'>${now.toLocaleString("ko-KR", { timeZone: "Asia/Seoul" })}</time>` as RendererOutput;
+      case 'youtube':
+        return `<iframe allowfullscreen width="640" height="360" frameborder="0" src="//www.youtube.com/embed/${target}" loading="lazy"></iframe>` as RendererOutput;
       default:
         return `` as RendererOutput;
     }
