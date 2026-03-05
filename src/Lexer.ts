@@ -15,7 +15,6 @@ export class _Lexer<ParserOutput = string, RendererOutput = string> {
     top: boolean;
     endInline: boolean;
     inLiteral: boolean;
-    skip: boolean;
   };
 
   private tokenizer: _Tokenizer<ParserOutput, RendererOutput>;
@@ -34,7 +33,6 @@ export class _Lexer<ParserOutput = string, RendererOutput = string> {
       top: true,
       endInline: false,
       inLiteral: false,
-      skip: false,
     };
 
     this.tokenizer.rules = {
@@ -76,15 +74,15 @@ export class _Lexer<ParserOutput = string, RendererOutput = string> {
   /**
    * Lexing
    */
-  blockTokens(src: string, tokens?: Token[]): Token[];
-  blockTokens(src: string, tokens?: TokensList): TokensList;
-  blockTokens(src: string, tokens: Token[] = []) {
+  blockTokens(src: string, tokens?: Token[], skip?: boolean): Token[];
+  blockTokens(src: string, tokens?: TokensList, skip?: boolean): TokensList;
+  blockTokens(src: string, tokens: Token[] = [], skip?: boolean) {
     const prevTop = this.state.top;
     try {
       while (src) {
         let token: Tokens.Generic | undefined;
 
-        if (!this.state.skip) {
+        if (!skip) {
           // heading
           if (this.state.top && (token = this.tokenizer.heading(src))) {
             src = src.substring(token.raw.length);
@@ -132,7 +130,7 @@ export class _Lexer<ParserOutput = string, RendererOutput = string> {
         // paragraph
         if (token = this.tokenizer.paragraph(src)) {
           const lastToken = tokens.at(-1);
-          if (lastToken?.type === 'paragraph') {
+          if (lastToken?.type === 'paragraph' || lastToken?.type === 'text') {
             lastToken.raw += token.raw;
             lastToken.text += token.text;
             // lastToken.tokens = [...lastToken.tokens, ...token.tokens];
@@ -140,6 +138,7 @@ export class _Lexer<ParserOutput = string, RendererOutput = string> {
             tokens.push(token);
           }
           src = src.substring(token.raw.length);
+          skip = false;
           continue;
         }
 
@@ -150,7 +149,6 @@ export class _Lexer<ParserOutput = string, RendererOutput = string> {
       }
     } finally {
       this.state.top = prevTop;
-      this.state.skip = false;
     }
 
     return tokens;

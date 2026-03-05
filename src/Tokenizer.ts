@@ -195,7 +195,7 @@ export class _Tokenizer<ParserOutput = string, RendererOutput = string> {
     while (src && src.startsWith("||")) {
       const cells = [];
       src = src.substring(2);
-      while (src && !src.startsWith("\n")) {
+      while (src) {
         let inline = this.lexer.inlineTokens(
           src,
           this.rules.other.tableDelimiter,
@@ -207,6 +207,7 @@ export class _Tokenizer<ParserOutput = string, RendererOutput = string> {
         }
         src = src.substring(2);
         cells.push(inline.raw);
+        if (src.startsWith("\n")) break;
       }
 
       if (endEarly) {
@@ -215,10 +216,9 @@ export class _Tokenizer<ParserOutput = string, RendererOutput = string> {
 
       item.rows.push(
         splitCells(cells, item.attrs).map(({ cell, option }) => {
-          this.lexer.state.skip = true;
           return {
             text: cell,
-            tokens: this.lexer.blockTokens(cell),
+            tokens: this.lexer.blockTokens(cell, [], true),
             option,
           };
         }),
@@ -369,8 +369,7 @@ export class _Tokenizer<ParserOutput = string, RendererOutput = string> {
       src = src.substring(inline.raw.length);
       cap = this.rules.inline.bracesRDelim.exec(src);
       if (!cap) return;
-      this.lexer.state.skip = true;
-      tokens = this.lexer.blockTokens(inline.raw);
+      tokens = this.lexer.blockTokens(inline.raw, [], true);
       return {
         type: "size",
         raw: "{{{" + style[0] + inline.raw + "}}}",
@@ -389,8 +388,7 @@ export class _Tokenizer<ParserOutput = string, RendererOutput = string> {
       src = src.substring(inline.raw.length);
       cap = this.rules.inline.bracesRDelim.exec(src);
       if (!cap) return;
-      this.lexer.state.skip = true;
-      tokens = this.lexer.blockTokens(inline.raw);
+      tokens = this.lexer.blockTokens(inline.raw, [], true);
       return {
         type: "color",
         raw: "{{{" + style[0] + inline.raw + "}}}",
