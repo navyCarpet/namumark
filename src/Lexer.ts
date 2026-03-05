@@ -15,6 +15,7 @@ export class _Lexer<ParserOutput = string, RendererOutput = string> {
     top: boolean;
     endInline: boolean;
     inLiteral: boolean;
+    skip: boolean;
   };
 
   private tokenizer: _Tokenizer<ParserOutput, RendererOutput>;
@@ -33,6 +34,7 @@ export class _Lexer<ParserOutput = string, RendererOutput = string> {
       top: true,
       endInline: false,
       inLiteral: false,
+      skip: false,
     };
 
     this.tokenizer.rules = {
@@ -82,47 +84,49 @@ export class _Lexer<ParserOutput = string, RendererOutput = string> {
       while (src) {
         let token: Tokens.Generic | undefined;
 
-        // heading
-        if (this.state.top && (token = this.tokenizer.heading(src))) {
-          src = src.substring(token.raw.length);
-          this.tokens.headings.push(token as Tokens.Heading);
-          tokens.push(token);
-          continue;
-        }
+        if (!this.state.skip) {
+          // heading
+          if (this.state.top && (token = this.tokenizer.heading(src))) {
+            src = src.substring(token.raw.length);
+            this.tokens.headings.push(token as Tokens.Heading);
+            tokens.push(token);
+            continue;
+          }
 
-        // hr
-        if (token = this.tokenizer.hr(src)) {
-          src = src.substring(token.raw.length);
-          tokens.push(token);
-          continue;
-        }
+          // hr
+          if (token = this.tokenizer.hr(src)) {
+            src = src.substring(token.raw.length);
+            tokens.push(token);
+            continue;
+          }
 
-        // blockquote
-        if (token = this.tokenizer.blockquote(src)) {
-          src = src.substring(token.raw.length);
-          tokens.push(token);
-          continue;
-        }
+          // blockquote
+          if (token = this.tokenizer.blockquote(src)) {
+            src = src.substring(token.raw.length);
+            tokens.push(token);
+            continue;
+          }
 
-        // list
-        if (token = this.tokenizer.list(src)) {
-          src = src.substring(token.raw.length);
-          tokens.push(token);
-          continue;
-        }
+          // list
+          if (token = this.tokenizer.list(src)) {
+            src = src.substring(token.raw.length);
+            tokens.push(token);
+            continue;
+          }
 
-        // table
-        if (token = this.tokenizer.table(src)) {
-          src = src.substring(token.raw.length);
-          tokens.push(token);
-          continue;
-        }
+          // table
+          if (token = this.tokenizer.table(src)) {
+            src = src.substring(token.raw.length);
+            tokens.push(token);
+            continue;
+          }
 
-        // indent
-        if (token = this.tokenizer.indent(src)) {
-          src = src.substring(token.raw.length);
-          tokens.push(token);
-          continue;
+          // indent
+          if (token = this.tokenizer.indent(src)) {
+            src = src.substring(token.raw.length);
+            tokens.push(token);
+            continue;
+          }
         }
 
         // paragraph
@@ -146,6 +150,7 @@ export class _Lexer<ParserOutput = string, RendererOutput = string> {
       }
     } finally {
       this.state.top = prevTop;
+      this.state.skip = false;
     }
 
     return tokens;

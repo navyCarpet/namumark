@@ -215,11 +215,10 @@ export class _Tokenizer<ParserOutput = string, RendererOutput = string> {
 
       item.rows.push(
         splitCells(cells, item.attrs).map(({ cell, option }) => {
-          const firstLine = this.lexer.inlineTokens(cell);
-          const left = cell.substring(firstLine.raw.length);
+          this.lexer.state.skip = true;
           return {
             text: cell,
-            tokens: [...firstLine.tokens, ...this.lexer.blockTokens(left)],
+            tokens: this.lexer.blockTokens(cell),
             option,
           };
         }),
@@ -370,11 +369,12 @@ export class _Tokenizer<ParserOutput = string, RendererOutput = string> {
       src = src.substring(inline.raw.length);
       cap = this.rules.inline.bracesRDelim.exec(src);
       if (!cap) return;
+      this.lexer.state.skip = true;
       tokens = this.lexer.blockTokens(inline.raw);
       return {
         type: "size",
         raw: "{{{" + style[0] + inline.raw + "}}}",
-        style: style[0],
+        style: style[1],
         tokens,
       };
     }
@@ -389,6 +389,7 @@ export class _Tokenizer<ParserOutput = string, RendererOutput = string> {
       src = src.substring(inline.raw.length);
       cap = this.rules.inline.bracesRDelim.exec(src);
       if (!cap) return;
+      this.lexer.state.skip = true;
       tokens = this.lexer.blockTokens(inline.raw);
       return {
         type: "color",

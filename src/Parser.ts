@@ -76,7 +76,7 @@ export class _Parser<ParserOutput = string, RendererOutput = string> {
           continue;
         }
         case 'comment': {
-          out += this.renderer.comment(token);
+          out += this.renderer.comment();
           continue;
         }
         case 'literal': {

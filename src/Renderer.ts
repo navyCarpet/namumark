@@ -124,7 +124,7 @@ export class _Renderer<ParserOutput = string, RendererOutput = string> {
     return text as RendererOutput;
   }
 
-  comment({ }: Tokens.Comment): RendererOutput {
+  comment(): RendererOutput {
     return '' as RendererOutput;
   }
 
@@ -155,6 +155,7 @@ export class _Renderer<ParserOutput = string, RendererOutput = string> {
   }
 
   color({ style, tokens }: Tokens.Color): RendererOutput {
+    if (/^[0-9a-fA-F]{6}|[0-9a-fA-F]{3}$/.test(style)) style = '#' + style;
     return `<span style="color: ${style}">${this.parser.parse(tokens)}</span>` as RendererOutput;
   }
 
