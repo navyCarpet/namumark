@@ -1,6 +1,6 @@
 {
   "name": "namumark",
-  "version": "0.0.6-dev",
+  "version": "0.0.7-dev",
   "description": "A namumark parser",
   "main": "./lib/marked.esm.js",
   "module": "./lib/marked.esm.js",

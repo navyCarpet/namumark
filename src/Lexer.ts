@@ -130,10 +130,15 @@ export class _Lexer<ParserOutput = string, RendererOutput = string> {
         // paragraph
         if (token = this.tokenizer.paragraph(src)) {
           const lastToken = tokens.at(-1);
-          if (lastToken?.type === 'paragraph' || lastToken?.type === 'text') {
-            lastToken.raw += token.raw;
-            lastToken.text += token.text;
-            // lastToken.tokens = [...lastToken.tokens, ...token.tokens];
+          if (lastToken?.type === token.type) {
+            if (lastToken.type === 'paragraph') {
+              lastToken.raw += token.raw;
+              lastToken.text += token.text;
+              lastToken.tokens = [...lastToken.tokens!, ...token.tokens!];
+            } else if (lastToken.type === 'text') {
+              lastToken.raw += token.raw;
+              lastToken.text += token.text;
+            }
           } else {
             tokens.push(token);
           }

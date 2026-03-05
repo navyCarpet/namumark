@@ -198,7 +198,7 @@ export class _Tokenizer<ParserOutput = string, RendererOutput = string> {
       while (src) {
         let inline = this.lexer.inlineTokens(
           src,
-          this.rules.other.tableDelimiter,
+          this.rules.block.tableDelimiter,
         );
         src = src.substring(inline.raw.length);
         if (!src.startsWith("||")) {
@@ -413,21 +413,21 @@ export class _Tokenizer<ParserOutput = string, RendererOutput = string> {
 
   link(src: string): Tokens.Link | undefined {
     let cap = this.rules.inline.linkLDelim.exec(src);
-    let raw = "",
-      href = "";
+    let raw = "";
+    let href = "";
     if (!cap) return;
 
     raw += cap[0];
     src = src.substring(cap[0].length);
 
-    cap = /(?:\\.|[^|\]\\])*/.exec(src);
+    cap = this.rules.inline.linkPipe.exec(src);
     href = cap ? cap[0] : "";
     raw += href;
     src = src.substring(href.length);
 
-    if ((cap = /^\|/.exec(src))) {
-      raw += cap[0];
-      src = src.substring(cap[0].length);
+    if (src.startsWith("|")) {
+      raw += '|';
+      src = src.substring(1);
       let inline = this.lexer.inlineTokens(
         src,
         this.rules.other.endInlineRegex("]]"),
@@ -473,21 +473,31 @@ export class _Tokenizer<ParserOutput = string, RendererOutput = string> {
 
     const delim = cap[0];
     const title = cap[1] ?? "";
-    let rest = src.substring(delim.length);
+    src = src.substring(delim.length);
+    if (src.startsWith("]")) {
+      return {
+        type: "footnote",
+        raw: delim + "]",
+        title,
+        text: '',
+        tokens: [],
+      };
+    }
+    else if (src.startsWith(" ")) {
+      const inner = this.lexer.inlineTokens(src, /^(?:\]|\n)/);
+      src = src.substring(inner.raw.length);
+      if (!src.startsWith("]")) return;
 
-    const inner = this.lexer.inlineTokens(rest, /^(?:\]|\n)/);
-    rest = rest.substring(inner.raw.length);
-    if (!rest.startsWith("]")) return;
+      const raw = delim + inner.raw + "]";
 
-    const raw = delim + inner.raw + "]";
-
-    return {
-      type: "footnote",
-      raw,
-      title,
-      text: inner.raw,
-      tokens: inner.tokens,
-    };
+      return {
+        type: "footnote",
+        raw,
+        title,
+        text: inner.raw,
+        tokens: inner.tokens,
+      };
+    }
   }
 
   macro(src: string): Tokens.Macro | undefined {

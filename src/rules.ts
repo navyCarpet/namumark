@@ -93,6 +93,9 @@ const list = /^ (\*|[1aAiI]\.)(#\w+)? ?/;
 const indent = /^ /;
 const blockquote = /^>/;
 const table = /^\|\|/;
+const tableDelimiter = edit(/^(?:heading|\|\|)/)
+  .replace('heading', heading)
+  .getRegex();
 const paragraph = edit(/^\n(?:heading|indent|hr|list|table|blockquote)/)
   .replace('heading', heading)
   .replace('indent', indent)
@@ -109,6 +112,7 @@ const blockNormal = {
   indent,
   list,
   table,
+  tableDelimiter,
   paragraph,
 };
 
@@ -125,8 +129,9 @@ const inlineNormal = {
   bracesRDelim: /^}}}/,
   newline: /^\n/,
   linkLDelim: /^\[\[/,
+  linkPipe: /(?:\\.|[^|\]\\\n])*/,
   linkRDelim: /^\]\]/,
-  footnote: /^\[\*(\S*) /,
+  footnote: /^\[\*([^ \]]*)/,
   macro: /^\[(.+?)(?:\(((?:\\.|[^\\])*?)\))?(?<!\\)\]/,
   sup: /^(?:\^\^\^|\^\^)/,
   sub: /^(?:,,,|,,)/,
