@@ -1,10 +1,10 @@
-import { validateHTMLColorHex, validateHTMLColorName } from 'validate-color';
-import { _defaults } from './defaults.ts';
-import { splitCells } from './helpers.ts';
-import type { Rules } from './rules.ts';
-import type { _Lexer } from './Lexer.ts';
-import type { Tokens, Token } from './Tokens.ts';
-import type { MarkedOptions } from './MarkedOptions.ts';
+import { validateHTMLColorHex, validateHTMLColorName } from "validate-color";
+import { _defaults } from "./defaults.ts";
+import { splitCells } from "./helpers.ts";
+import type { Rules } from "./rules.ts";
+import type { _Lexer } from "./Lexer.ts";
+import type { Tokens, Token } from "./Tokens.ts";
+import type { MarkedOptions } from "./MarkedOptions.ts";
 
 /**
  * Tokenizer
@@ -22,7 +22,7 @@ export class _Tokenizer<ParserOutput = string, RendererOutput = string> {
     const cap = this.rules.block.heading.exec(src);
     if (cap) {
       return {
-        type: 'heading',
+        type: "heading",
         raw: cap[0],
         depth: cap[1].length,
         folded: !!cap[2],
@@ -36,7 +36,7 @@ export class _Tokenizer<ParserOutput = string, RendererOutput = string> {
     const cap = this.rules.block.hr.exec(src);
     if (cap) {
       return {
-        type: 'hr',
+        type: "hr",
         raw: cap[0],
       };
     }
@@ -44,76 +44,81 @@ export class _Tokenizer<ParserOutput = string, RendererOutput = string> {
 
   blockquote(src: string): Tokens.Blockquote | undefined {
     let cap: RegExpExecArray | null;
-    let raw = '';
-    let text = '';
-    let rest = src;
+    let raw = "";
+    let text = "";
 
-    while ((cap = this.rules.block.blockquote.exec(rest))) {
-      raw += cap[0];
-      text += cap[1];
-      rest = rest.substring(cap[0].length);
+    while ((cap = this.rules.block.blockquote.exec(src))) {
+      src = src.substring(cap[0].length);
+
+      const inner = this.lexer.inlineTokens(src);
+      src = src.substring(inner.raw.length);
+      if (!src.startsWith("\n")) break;
+
+      raw += ">" + inner.raw + "\n";
+      text += inner.raw + "\n";
+      src = src.substring(1);
     }
 
     if (!raw) return;
 
     return {
-      type: 'blockquote',
+      type: "blockquote",
       raw,
       text,
-      tokens: this.lexer.blockTokens(text)
+      tokens: this.lexer.blockTokens(text),
     };
   }
 
   list(src: string): Tokens.List | undefined {
     let cap = this.rules.block.list.exec(src);
     if (!cap) return;
-  
+
     let bull = cap[1].trim();
-    let style = '';
+    let style = "";
 
     switch (bull) {
-      case '1.':
-        style = 'decimal';
+      case "1.":
+        style = "decimal";
         break;
-      case 'a.':
-        style = 'alpha';
+      case "a.":
+        style = "alpha";
         break;
-      case 'A.':
-        style = 'upper-alpha';
+      case "A.":
+        style = "upper-alpha";
         break;
-      case 'i.':
-        style = 'roman';
+      case "i.":
+        style = "roman";
         break;
-      case 'I.':
-        style = 'upper-roman';
+      case "I.":
+        style = "upper-roman";
         break;
     }
     const isordered = bull.length > 1;
 
     const list: Tokens.List = {
-      type: 'list',
+      type: "list",
       raw: cap[0],
       ordered: isordered,
       style,
-      start: isordered ? cap[2] ? +cap[2] : 1 : '',
+      start: isordered ? (cap[2] ? +cap[2] : 1) : "",
       items: [],
     };
 
     src = src.substring(cap[0].length);
 
-    let inline = this.lexer.inlineTokens(src);
-    src = src.substring(inline.raw.length);
-    if (src.startsWith('\n')) {
+    let inner = this.lexer.inlineTokens(src);
+    src = src.substring(inner.raw.length);
+    if (src.startsWith("\n")) {
       src = src.substring(1);
-      inline.raw += '\n';
+      inner.raw += "\n";
     }
-    
-    list.raw += inline.raw;
+
+    list.raw += inner.raw;
     list.items.push({
-      type: 'list_item',
-      raw: cap[0] + inline.raw,
-      text: inline.raw,
-      tokens: inline.tokens,
+      type: "list_item",
+      raw: cap[0] + inner.raw,
+      text: inner.raw,
+      tokens: inner.tokens,
     });
 
     bull = isordered ? `${bull.slice(0, 1)}\\.` : `\\*`;
@@ -121,7 +126,7 @@ export class _Tokenizer<ParserOutput = string, RendererOutput = string> {
     // Get next list item
     const itemRegex = this.rules.other.listItemRegex(bull);
     while (src) {
-      if (!src.startsWith(' ')) {
+      if (!src.startsWith(" ")) {
         break;
       }
 
@@ -129,34 +134,32 @@ export class _Tokenizer<ParserOutput = string, RendererOutput = string> {
         list.raw += cap[0];
         src = src.substring(cap[0].length);
 
-        inline = this.lexer.inlineTokens(src);
-        src = src.substring(inline.raw.length);
-        if (src.startsWith('\n')) {
+        inner = this.lexer.inlineTokens(src);
+        src = src.substring(inner.raw.length);
+        if (src.startsWith("\n")) {
           src = src.substring(1);
-          inline.raw += '\n';
+          inner.raw += "\n";
         }
-        
-        list.raw += inline.raw;
-        list.items.push({
-          type: 'list_item',
-          raw: cap[0] + inline.raw,
-          text: inline.raw,
-          tokens: inline.tokens,
-        });
 
+        list.raw += inner.raw;
+        list.items.push({
+          type: "list_item",
+          raw: cap[0] + inner.raw,
+          text: inner.raw,
+          tokens: [],
+        });
       } else {
         src = src.substring(1);
-        inline = this.lexer.inlineTokens(src);
-        src = src.substring(inline.raw.length);
-        if (src.startsWith('\n')) {
+        inner = this.lexer.inlineTokens(src);
+        src = src.substring(inner.raw.length);
+        if (src.startsWith("\n")) {
           src = src.substring(1);
-          inline.raw += '\n';
+          inner.raw += "\n";
         }
 
-        list.raw += ' ' + inline.raw;
-        list.items.at(-1)!.raw += ' ' + inline.raw;
-        list.items.at(-1)!.text += inline.raw;
-        list.items.at(-1)!.tokens.push(...inline.tokens);
+        list.raw += " " + inner.raw;
+        list.items.at(-1)!.raw += " " + inner.raw;
+        list.items.at(-1)!.text += inner.raw;
       }
     }
 
@@ -174,23 +177,26 @@ export class _Tokenizer<ParserOutput = string, RendererOutput = string> {
   }
 
   table(src: string): Tokens.Table | undefined {
-    if (!src.startsWith('||')) return;
+    if (!src.startsWith("||")) return;
 
     const item: Tokens.Table = {
-      type: 'table',
-      raw: '',
+      type: "table",
+      raw: "",
       rows: [],
-      attrs: {}
+      attrs: {},
     };
 
     let endEarly = false;
-    while (src && src.startsWith('||')) {
+    while (src && src.startsWith("||")) {
       const cells = [];
       src = src.substring(2);
-      while (src && !src.startsWith('\n')) {
-        let inline = this.lexer.inlineTokens(src, this.rules.other.tableDelimiter);
+      while (src && !src.startsWith("\n")) {
+        let inline = this.lexer.inlineTokens(
+          src,
+          this.rules.other.tableDelimiter,
+        );
         src = src.substring(inline.raw.length);
-        if (!src.startsWith('||')) {
+        if (!src.startsWith("||")) {
           endEarly = true;
           break;
         }
@@ -202,18 +208,20 @@ export class _Tokenizer<ParserOutput = string, RendererOutput = string> {
         break;
       }
 
-      item.rows.push(splitCells(cells, item.attrs).map(({ cell, option }) => {
-        const firstLine = this.lexer.inlineTokens(cell);
-        const left = cell.substring(firstLine.raw.length);
-        return {
-          text: cell,
-          tokens: [...firstLine.tokens, ...this.lexer.blockTokens(left)],
-          option
-        };
-      }));
+      item.rows.push(
+        splitCells(cells, item.attrs).map(({ cell, option }) => {
+          const firstLine = this.lexer.inlineTokens(cell);
+          const left = cell.substring(firstLine.raw.length);
+          return {
+            text: cell,
+            tokens: [...firstLine.tokens, ...this.lexer.blockTokens(left)],
+            option,
+          };
+        }),
+      );
 
       src = src.substring(1);
-      item.raw += '||' + cells.join('||') + '||\n';
+      item.raw += "||" + cells.join("||") + "||\n";
     }
 
     if (!item.raw) return;
@@ -222,18 +230,26 @@ export class _Tokenizer<ParserOutput = string, RendererOutput = string> {
   }
 
   indent(src: string): Tokens.Indent | undefined {
-    let cap;
-    let raw = '', text = '';
+    let cap: RegExpExecArray | null;
+    let raw = "";
+    let text = "";
+
     while (cap = this.rules.block.indent.exec(src)) {
-      raw += cap[0];
-      text += cap[1];
       src = src.substring(cap[0].length);
+
+      const inner = this.lexer.inlineTokens(src);
+      src = src.substring(inner.raw.length);
+      if (!src.startsWith("\n")) break;
+
+      raw += " " + inner.raw + "\n";
+      text += inner.raw + "\n";
+      src = src.substring(1);
     }
 
     if (!raw) return;
 
     return {
-      type: 'indent',
+      type: "indent",
       raw,
       text,
       tokens: this.lexer.blockTokens(text),
@@ -241,22 +257,25 @@ export class _Tokenizer<ParserOutput = string, RendererOutput = string> {
   }
 
   paragraph(src: string): Tokens.Paragraph | Tokens.Text | undefined {
+    const prevInParagraph = this.lexer.state.inParagraph;
+    this.lexer.state.inParagraph = true;
     const inline = this.lexer.inlineTokens(src, this.rules.block.paragraph);
+    this.lexer.state.inParagraph = prevInParagraph;
     src = src.substring(inline.raw.length);
 
     const cap = this.rules.inline.newline.exec(src);
     if (cap) {
       inline.raw += cap[0];
       inline.tokens.push({
-        type: 'br',
-        raw: cap[0]
+        type: "br",
+        raw: cap[0],
       });
     }
 
     if (!inline.raw) return;
 
     return {
-      type: this.lexer.state.inParagraph ? 'text' : 'paragraph',
+      type: this.lexer.state.inParagraph ? "text" : "paragraph",
       raw: inline.raw,
       text: inline.raw,
       tokens: inline.tokens,
@@ -268,7 +287,7 @@ export class _Tokenizer<ParserOutput = string, RendererOutput = string> {
     const cap = this.rules.inline.escape.exec(src);
     if (cap) {
       return {
-        type: 'escape',
+        type: "escape",
         raw: cap[0],
         text: cap[1],
       };
@@ -287,14 +306,14 @@ export class _Tokenizer<ParserOutput = string, RendererOutput = string> {
     // }
   }
 
-  braces(src: string): Tokens.Literal | Tokens.Style | Tokens.Color | Tokens.Size | undefined {
+  braces(src: string): Tokens.Literal | Tokens.Style | Tokens.Color | Tokens.Folding | Tokens.Size | undefined {
     let cap = this.rules.inline.bracesLDelim.exec(src);
     if (!cap) return;
     src = src.substring(cap[0].length);
 
     let tokens: Token[] = [];
 
-    if (cap = this.rules.other.literalStyle.exec(src)) {
+    if ((cap = this.rules.other.literalStyle.exec(src))) {
       src = src.substring(cap[0].length);
       let style = cap;
       let inline = this.lexer.inlineTokens(src, this.rules.inline.bracesRDelim);
@@ -303,14 +322,14 @@ export class _Tokenizer<ParserOutput = string, RendererOutput = string> {
       if (!cap) return;
       tokens = this.lexer.blockTokens(inline.raw);
       return {
-        type: 'style',
-        raw: '{{{' + style[0] + inline.raw + '}}}',
+        type: "style",
+        raw: "{{{" + style[0] + inline.raw + "}}}",
         style: style[1],
-        tokens
-      }
+        tokens,
+      };
     }
 
-    if (cap = this.rules.other.literalFolding.exec(src)) {
+    if ((cap = this.rules.other.literalFolding.exec(src))) {
       src = src.substring(cap[0].length);
       let style = cap;
       let inline = this.lexer.inlineTokens(src, this.rules.inline.bracesRDelim);
@@ -319,14 +338,14 @@ export class _Tokenizer<ParserOutput = string, RendererOutput = string> {
       if (!cap) return;
       tokens = this.lexer.blockTokens(inline.raw);
       return {
-        type: 'literal',
-        raw: '{{{' + style[0] + inline.raw + '}}}',
-        style: style[1],
-        tokens
-      }
+        type: "folding",
+        raw: "{{{" + style[0] + inline.raw + "}}}",
+        text: style[1],
+        tokens,
+      };
     }
 
-    if (cap = this.rules.other.literalSize.exec(src)) {
+    if ((cap = this.rules.other.literalSize.exec(src))) {
       src = src.substring(cap[0].length);
       let style = cap;
       let inline = this.lexer.inlineTokens(src, this.rules.inline.bracesRDelim);
@@ -335,15 +354,15 @@ export class _Tokenizer<ParserOutput = string, RendererOutput = string> {
       if (!cap) return;
       tokens = this.lexer.blockTokens(inline.raw);
       return {
-        type: 'size',
-        raw: '{{{' + style[0] + inline.raw + '}}}',
+        type: "size",
+        raw: "{{{" + style[0] + inline.raw + "}}}",
         style: style[0],
-        tokens
-      }
+        tokens,
+      };
     }
 
-    if (cap = this.rules.other.literalColor.exec(src)) {
-      // const [light = '', dark = ''] = cap[1].split(','); 
+    if ((cap = this.rules.other.literalColor.exec(src))) {
+      // const [light = '', dark = ''] = cap[1].split(',');
       // if (light !== 'transparent' && !validateHTMLColorHex(light) && !validateHTMLColorName(light)) break;
       // if (dark && dark !== 'transparent' && !validateHTMLColorHex(dark) && !validateHTMLColorName(dark)) break;
       src = src.substring(cap[0].length);
@@ -354,13 +373,12 @@ export class _Tokenizer<ParserOutput = string, RendererOutput = string> {
       if (!cap) return;
       tokens = this.lexer.blockTokens(inline.raw);
       return {
-        type: 'color',
-        raw: '{{{' + style[0] + inline.raw + '}}}',
+        type: "color",
+        raw: "{{{" + style[0] + inline.raw + "}}}",
         style: style[1],
-        tokens
-      }
-    }
-    else {
+        tokens,
+      };
+    } else {
       this.lexer.state.inLiteral = true;
       let inline = this.lexer.inlineTokens(src, this.rules.inline.bracesRDelim);
       this.lexer.state.inLiteral = false;
@@ -368,62 +386,67 @@ export class _Tokenizer<ParserOutput = string, RendererOutput = string> {
       cap = this.rules.inline.bracesRDelim.exec(src);
       if (cap) {
         return {
-          type: 'literal',
-          raw: '{{{' + inline.raw + '}}}',
-          tokens: []
-        }
+          type: "literal",
+          raw: "{{{" + inline.raw + "}}}",
+          text: inline.raw,
+        };
       }
     }
   }
 
   link(src: string): Tokens.Link | undefined {
     let cap = this.rules.inline.linkLDelim.exec(src);
-    let raw = '', href = '';
+    let raw = "",
+      href = "";
     if (!cap) return;
 
     raw += cap[0];
     src = src.substring(cap[0].length);
 
     cap = /(?:\\.|[^|\]\\])*/.exec(src);
-    href = cap ? cap[0] : '';
+    href = cap ? cap[0] : "";
     raw += href;
     src = src.substring(href.length);
 
-    if (cap = /^\|/.exec(src)) {
+    if ((cap = /^\|/.exec(src))) {
       raw += cap[0];
       src = src.substring(cap[0].length);
-      let inline = this.lexer.inlineTokens(src, this.rules.other.endInlineRegex(']]'));
+      let inline = this.lexer.inlineTokens(
+        src,
+        this.rules.other.endInlineRegex("]]"),
+      );
       raw += inline.raw;
       src = src.substring(inline.raw.length);
-      cap = this.rules.inline.linkRDelim.exec(src)
+      cap = this.rules.inline.linkRDelim.exec(src);
       if (!cap) return;
       raw += cap[0];
       return {
-        type: 'link',
+        type: "link",
         raw,
         href,
         external: this.rules.other.externalLink.test(href),
         text: inline.raw,
         tokens: inline.tokens,
-      }
-    }
-    else {
-      cap = this.rules.inline.linkRDelim.exec(src)
+      };
+    } else {
+      cap = this.rules.inline.linkRDelim.exec(src);
       if (!cap) return;
       raw += cap[0];
       return {
-        type: 'link',
+        type: "link",
         raw,
         href,
         external: this.rules.other.externalLink.test(href),
         text: href,
-        tokens: [{
-          type: 'text',
-          raw: href,
-          text: href,
-          escaped: false
-        }]
-      }
+        tokens: [
+          {
+            type: "text",
+            raw: href,
+            text: href,
+            escaped: false,
+          },
+        ],
+      };
     }
   }
 
@@ -432,17 +455,17 @@ export class _Tokenizer<ParserOutput = string, RendererOutput = string> {
     if (!cap) return;
 
     const delim = cap[0];
-    const title = cap[1] ?? '';
+    const title = cap[1] ?? "";
     let rest = src.substring(delim.length);
 
     const inner = this.lexer.inlineTokens(rest, /^(?:\]|\n)/);
     rest = rest.substring(inner.raw.length);
-    if (!rest.startsWith(']')) return;
+    if (!rest.startsWith("]")) return;
 
-    const raw = delim + inner.raw + ']';
+    const raw = delim + inner.raw + "]";
 
     return {
-      type: 'footnote',
+      type: "footnote",
       raw,
       title,
       text: inner.raw,
@@ -455,38 +478,38 @@ export class _Tokenizer<ParserOutput = string, RendererOutput = string> {
     if (cap) {
       const name = cap[1].trim().toLowerCase();
       switch (name) {
-        case '목차':
-        case 'tableofcontents':
+        case "목차":
+        case "tableofcontents":
           return {
-            type: 'macro',
+            type: "macro",
             raw: cap[0],
-            name: 'tableofcontents'
+            name: "tableofcontents",
           };
-        case '각주':
-        case 'footnote':
+        case "각주":
+        case "footnote":
           return {
-            type: 'macro',
+            type: "macro",
             raw: cap[0],
-            name: 'footnote'
+            name: "footnote",
           };
-        case 'br':
+        case "br":
           return {
-            type: 'macro',
+            type: "macro",
             raw: cap[0],
-            name: 'br'
+            name: "br",
           };
-        case 'clearfix':
+        case "clearfix":
           return {
-            type: 'macro',
+            type: "macro",
             raw: cap[0],
-            name: 'clearfix'
+            name: "clearfix",
           };
-        case 'date':
-        case 'datetime':
+        case "date":
+        case "datetime":
           return {
-            type: 'macro',
+            type: "macro",
             raw: cap[0],
-            name: 'date'
+            name: "date",
           };
       }
 
@@ -512,7 +535,7 @@ export class _Tokenizer<ParserOutput = string, RendererOutput = string> {
     const cap = this.rules.inline.newline.exec(src);
     if (cap) {
       return {
-        type: 'br',
+        type: "br",
         raw: cap[0],
       };
     }
@@ -534,7 +557,7 @@ export class _Tokenizer<ParserOutput = string, RendererOutput = string> {
     raw += delim;
 
     return {
-      type: 'sub',
+      type: "sub",
       raw,
       text: inline.raw,
       tokens: inline.tokens,
@@ -557,7 +580,7 @@ export class _Tokenizer<ParserOutput = string, RendererOutput = string> {
     raw += delim;
 
     return {
-      type: 'sup',
+      type: "sup",
       raw,
       text: inline.raw,
       tokens: inline.tokens,
@@ -578,10 +601,10 @@ export class _Tokenizer<ParserOutput = string, RendererOutput = string> {
     const raw = delim + inner.raw + delim;
 
     return {
-      type: 'strong',
+      type: "strong",
       raw,
       text: inner.raw,
-      tokens: inner.tokens
+      tokens: inner.tokens,
     };
   }
 
@@ -599,10 +622,10 @@ export class _Tokenizer<ParserOutput = string, RendererOutput = string> {
     const raw = delim + inner.raw + delim;
 
     return {
-      type: 'em',
+      type: "em",
       raw,
       text: inner.raw,
-      tokens: inner.tokens
+      tokens: inner.tokens,
     };
   }
 
@@ -620,10 +643,10 @@ export class _Tokenizer<ParserOutput = string, RendererOutput = string> {
     const raw = delim + inner.raw + delim;
 
     return {
-      type: 'del',
+      type: "del",
       raw,
       text: inner.raw,
-      tokens: inner.tokens
+      tokens: inner.tokens,
     };
   }
 
@@ -641,10 +664,10 @@ export class _Tokenizer<ParserOutput = string, RendererOutput = string> {
     const raw = delim + inner.raw + delim;
 
     return {
-      type: 'underline',
+      type: "underline",
       raw,
       text: inner.raw,
-      tokens: inner.tokens
+      tokens: inner.tokens,
     };
   }
 
@@ -652,7 +675,7 @@ export class _Tokenizer<ParserOutput = string, RendererOutput = string> {
     const cap = this.rules.other.inlineText(end).exec(src);
     if (cap) {
       return {
-        type: 'text',
+        type: "text",
         raw: cap[0],
         text: cap[0],
         escaped: false,

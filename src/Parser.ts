@@ -95,6 +95,10 @@ export class _Parser<ParserOutput = string, RendererOutput = string> {
           out += this.renderer.color(token);
           continue;
         }
+        case 'folding': {
+          out += this.renderer.folding(token);
+          continue;
+        }
         case 'space': {
           out += this.renderer.space(token);
           continue;
@@ -205,6 +209,10 @@ export class _Parser<ParserOutput = string, RendererOutput = string> {
         }
         case 'size': {
           out += this.renderer.size(token);
+          continue;
+        }
+        case 'folding': {
+          out += this.renderer.folding(token);
           continue;
         }
         case 'color': {

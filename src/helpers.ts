@@ -178,6 +178,15 @@ export function splitCells(tableRow: string[], tableAttrs: {[key: string]: strin
         cell = cell.substring(cap[0].length);
         continue;
       }
+      if (!tableAttrs['color'] && (cap = /^<color=(.+?)>/.exec(cell))) {
+        const [light = '', dark = ''] = cap[1].split(',');
+        if (light !== 'transparent' && !validateHTMLColorHex(light) && !validateHTMLColorName(light)) break;
+        if (dark && dark !== 'transparent' && !validateHTMLColorHex(dark) && !validateHTMLColorName(dark)) break;
+        option['color'] = light;
+        option['darkcolor'] = dark;
+        cell = cell.substring(cap[0].length);
+        continue;
+      }
       if (!option['background-color'] && (cap = /^<(.+?)>/.exec(cell))) {
         const [light = '', dark = ''] = cap[1].split(',');
         if (light !== 'transparent' && !validateHTMLColorHex(light) && !validateHTMLColorName(light)) break;

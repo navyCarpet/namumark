@@ -76,7 +76,7 @@ export const other = {
   notSpaceStart: /^\S*/,
   endingNewline: /\n$/,
   externalLink: /(?:[hH][tT][tT][pP][sS]?|[fF][tT][pP]):\/\/\w+\.[a-zA-Z]{2,}/,
-  listItemRegex: (bull: string) => new RegExp(`^ (${bull})(#\\d+)?`),
+  listItemRegex: (bull: string) => new RegExp(`^ ${bull} ?`),
   nextBulletRegex: (indent: number) => new RegExp(`^ {0,${Math.min(3, indent - 1)}}(?:[*+-]|\\d{1,9}[.)])((?:[ \t][^\\n]*)?(?:\\n|$))`),
   endInlineRegex: (start: string) => new RegExp(`^(?:${escapeRegExp(start)}|\\n)`),
   inlineText: (end: RegExp) => edit(/^[\s\S](?:(?!end)[^\\_\^,\-~\[{'#\n])*/).replace('end', end).getRegex()
@@ -88,10 +88,10 @@ export const other = {
 
 const heading = /^(={1,6})(#)? (.*) \2\1(?:\n|$)/;
 const hr = /^-{4,9}(?:\n|$)/;
-const list = /^ (\*|[1aAiI]\.)(#\w+)?/;
-const indent = /^ ([^\n]*(?:\n|$))/;
-const blockquote = /^>([^\n]*(?:\n|$))/;
-const table = /^\|\|[\s\S]*?\|\|(?:\n|$)/;
+const list = /^ (\*|[1aAiI]\.)(#\w+)? ?/;
+const indent = /^ /;
+const blockquote = /^>/;
+const table = /^\|\|/;
 const paragraph = edit(/^\n(?:heading|indent|hr|list|table|blockquote)/)
   .replace('heading', heading)
   .replace('indent', indent)

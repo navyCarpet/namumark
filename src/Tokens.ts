@@ -8,6 +8,7 @@ export type MarkedToken = (
   | Tokens.Del
   | Tokens.Em
   | Tokens.Escape
+  | Tokens.Folding
   | Tokens.Footnote
   | Tokens.Heading
   | Tokens.HeadingContent
@@ -57,6 +58,13 @@ export namespace Tokens {
     type: 'comment';
     raw: string;
     text: string;
+  }
+
+  export interface Folding {
+    type: 'folding';
+    raw: string;
+    text: string;
+    tokens: Token[];
   }
 
   export interface Macro {
@@ -201,8 +209,7 @@ export namespace Tokens {
   export interface Literal {
     type: 'literal';
     raw: string;
-    style?: string;
-    tokens: Token[];
+    text: string;
   }
 
   export interface Style {

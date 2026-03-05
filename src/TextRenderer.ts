@@ -22,6 +22,10 @@ export class _TextRenderer<RendererOutput = string> {
     return raw as RendererOutput;
   }
 
+  folding({ text }: Tokens.Folding): RendererOutput {
+    return text as RendererOutput;
+  }
+
   sub({ text }: Tokens.Sub): RendererOutput {
     return text as RendererOutput;
   }
