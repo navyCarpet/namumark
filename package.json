@@ -7,10 +7,12 @@
   "browser": "./lib/marked.umd.js",
   "types": "./lib/marked.d.ts",
   "scripts": {
+    "ci": "npm run build && npm run test",
     "build": "npm run build:esbuild && npm run build:types",
     "build:esbuild": "node esbuild.config.js",
     "build:types": "tsc && dts-bundle-generator --export-referenced-types --project tsconfig.json -o lib/marked.d.ts src/marked.ts",
-    "test": "node test"
+    "test": "vitest run",
+    "test:self": "node test"
   },
   "repository": {
     "type": "git",
@@ -42,7 +44,9 @@
     "esbuild": "^0.25.11",
     "esbuild-plugin-umd-wrapper": "^3.0.0",
     "highlight.js": "^11.11.1",
-    "typescript": "^5.9.3"
+    "jsdom": "^28.1.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
   },
   "dependencies": {
     "validate-color": "^2.2.4"
