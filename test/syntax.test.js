@@ -33,7 +33,7 @@ describe('syntax test', () => {
     const link = container.querySelector('a');
     expect(link).toBeDefined();
     // expect(link.getAttribute('href')).toBe('/w/asdf');
-    expect(link.classList.contains('wiki-link')).toBe(true);
+    expect(link.classList.contains('wiki-link-internal')).toBe(true);
     expect(link.textContent).toBe('asdf');
   });
 }); 
