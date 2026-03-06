@@ -1,6 +1,6 @@
 {
   "name": "namumark",
-  "version": "0.0.7-dev",
+  "version": "1.0.0-dev.0",
   "description": "A namumark parser",
   "main": "./lib/marked.esm.js",
   "module": "./lib/marked.esm.js",
@@ -11,8 +11,7 @@
     "build": "npm run build:esbuild && npm run build:types",
     "build:esbuild": "node esbuild.config.js",
     "build:types": "tsc && dts-bundle-generator --export-referenced-types --project tsconfig.json -o lib/marked.d.ts src/marked.ts",
-    "test": "vitest run",
-    "test:self": "node test"
+    "test": "vitest run"
   },
   "repository": {
     "type": "git",
@@ -31,6 +30,7 @@
     "namuwiki",
     "theseed"
   ],
+  "private": false,
   "author": "navyCarpet",
   "license": "MIT",
   "type": "module",

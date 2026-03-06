@@ -330,84 +330,80 @@ export class _Tokenizer<ParserOutput = string, RendererOutput = string> {
 
     let tokens: Token[] = [];
 
-    if ((cap = this.rules.other.literalStyle.exec(src))) {
-      src = src.substring(cap[0].length);
-      let style = cap;
-      let inline = this.lexer.inlineTokens(src, this.rules.inline.bracesRDelim);
-      src = src.substring(inline.raw.length);
-      cap = this.rules.inline.bracesRDelim.exec(src);
-      if (!cap) return;
-      tokens = this.lexer.blockTokens(inline.raw);
-      return {
-        type: "style",
-        raw: "{{{" + style[0] + inline.raw + "}}}",
-        style: style[1],
-        tokens,
-      };
-    }
-
-    if ((cap = this.rules.other.literalFolding.exec(src))) {
-      src = src.substring(cap[0].length);
-      let style = cap;
-      let inline = this.lexer.inlineTokens(src, this.rules.inline.bracesRDelim);
-      src = src.substring(inline.raw.length);
-      cap = this.rules.inline.bracesRDelim.exec(src);
-      if (!cap) return;
-      tokens = this.lexer.blockTokens(inline.raw);
-      return {
-        type: "folding",
-        raw: "{{{" + style[0] + inline.raw + "}}}",
-        text: style[1],
-        tokens,
-      };
-    }
-
-    if ((cap = this.rules.other.literalSize.exec(src))) {
-      src = src.substring(cap[0].length);
-      let style = cap;
-      let inline = this.lexer.inlineTokens(src, this.rules.inline.bracesRDelim);
-      src = src.substring(inline.raw.length);
-      cap = this.rules.inline.bracesRDelim.exec(src);
-      if (!cap) return;
-      tokens = this.lexer.blockTokens(inline.raw, [], true);
-      return {
-        type: "size",
-        raw: "{{{" + style[0] + inline.raw + "}}}",
-        style: style[1],
-        tokens,
-      };
-    }
-
-    if ((cap = this.rules.other.literalColor.exec(src))) {
-      // const [light = '', dark = ''] = cap[1].split(',');
-      // if (light !== 'transparent' && !validateHTMLColorHex(light) && !validateHTMLColorName(light)) break;
-      // if (dark && dark !== 'transparent' && !validateHTMLColorHex(dark) && !validateHTMLColorName(dark)) break;
-      src = src.substring(cap[0].length);
-      let style = cap;
-      let inline = this.lexer.inlineTokens(src, this.rules.inline.bracesRDelim);
-      src = src.substring(inline.raw.length);
-      cap = this.rules.inline.bracesRDelim.exec(src);
-      if (!cap) return;
-      tokens = this.lexer.blockTokens(inline.raw, [], true);
-      return {
-        type: "color",
-        raw: "{{{" + style[0] + inline.raw + "}}}",
-        style: style[1],
-        tokens,
-      };
-    } else {
-      this.lexer.state.inLiteral = true;
-      let inline = this.lexer.inlineTokens(src, this.rules.inline.bracesRDelim);
-      this.lexer.state.inLiteral = false;
-      src = src.substring(inline.raw.length);
-      cap = this.rules.inline.bracesRDelim.exec(src);
-      if (cap) {
+    if (!this.lexer.state.inLiteral) {
+      if ((cap = this.rules.other.literalStyle.exec(src))) {
+        src = src.substring(cap[0].length);
+        let style = cap;
+        let inline = this.lexer.inlineTokens(src, this.rules.inline.bracesRDelim);
+        src = src.substring(inline.raw.length);
+        if (!src.startsWith('}}}')) return;
+        tokens = this.lexer.blockTokens(inline.raw);
         return {
-          type: "literal",
-          raw: "{{{" + inline.raw + "}}}",
-          text: inline.raw,
+          type: "style",
+          raw: "{{{" + style[0] + inline.raw + "}}}",
+          style: style[1],
+          tokens,
         };
       }
+
+      if ((cap = this.rules.other.literalFolding.exec(src))) {
+        src = src.substring(cap[0].length);
+        let style = cap;
+        let inline = this.lexer.inlineTokens(src, this.rules.inline.bracesRDelim);
+        src = src.substring(inline.raw.length);
+        if (!src.startsWith('}}}')) return;
+        tokens = this.lexer.blockTokens(inline.raw);
+        return {
+          type: "folding",
+          raw: "{{{" + style[0] + inline.raw + "}}}",
+          text: style[1] ?? 'More',
+          tokens,
+        };
+      }
+
+      if ((cap = this.rules.other.literalSize.exec(src))) {
+        src = src.substring(cap[0].length);
+        let style = cap;
+        let inline = this.lexer.inlineTokens(src, this.rules.inline.bracesRDelim);
+        src = src.substring(inline.raw.length);
+        if (!src.startsWith('}}}')) return;
+        tokens = this.lexer.blockTokens(inline.raw, [], true);
+        return {
+          type: "size",
+          raw: "{{{" + style[0] + inline.raw + "}}}",
+          style: style[1],
+          tokens,
+        };
+      }
+
+      if ((cap = this.rules.other.literalColor.exec(src))) {
+        // const [light = '', dark = ''] = cap[1].split(',');
+        // if (light !== 'transparent' && !validateHTMLColorHex(light) && !validateHTMLColorName(light)) break;
+        // if (dark && dark !== 'transparent' && !validateHTMLColorHex(dark) && !validateHTMLColorName(dark)) break;
+        src = src.substring(cap[0].length);
+        let style = cap;
+        let inline = this.lexer.inlineTokens(src, this.rules.inline.bracesRDelim);
+        src = src.substring(inline.raw.length);
+        if (!src.startsWith('}}}')) return;
+        tokens = this.lexer.blockTokens(inline.raw, [], true);
+        return {
+          type: "color",
+          raw: "{{{" + style[0] + inline.raw + "}}}",
+          style: style[1],
+          tokens,
+        };
+      }
+    } else {
+      this.lexer.state.inLiteral = true;
+      let inline = this.lexer.inlineTokens(src, this.rules.inline.literalRDelim);
+      this.lexer.state.inLiteral = false;
+      src = src.substring(inline.raw.length);
+      if (!src.startsWith('}}}')) return;
+      return {
+        type: "literal",
+        raw: "{{{" + inline.raw + "}}}",
+        text: inline.raw,
+      };
     }
   }
 
@@ -547,7 +543,7 @@ export class _Tokenizer<ParserOutput = string, RendererOutput = string> {
     if (!args) return;
 
     let target = '';
-    const argument: Record<string, string> = {};
+    const argument: Record<string, string> = Object.create(null);
 
     while (args) {
       cap = this.rules.other.macroArgs.exec(args);
@@ -741,7 +737,7 @@ export class _Tokenizer<ParserOutput = string, RendererOutput = string> {
   }
 
   inlineText(src: string, end: RegExp): Tokens.Text | undefined {
-    const cap = this.rules.other.inlineText(end).exec(src);
+    const cap = this.lexer.state.inLiteral ? this.rules.inline.inLiteralText(end).exec(src) : this.rules.inline.inlineText(end).exec(src);
     if (cap) {
       return {
         type: "text",

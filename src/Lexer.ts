@@ -180,13 +180,6 @@ export class _Lexer<ParserOutput = string, RendererOutput = string> {
         continue;
       }
 
-      // newline
-      if (token = this.tokenizer.newline(src)) {
-        src = src.substring(token.raw.length);
-        tokens.push(token);
-        continue;
-      }
-
       if (!this.state.inLiteral) {
         // escape
         if (token = this.tokenizer.escape(src)) {
@@ -195,7 +188,15 @@ export class _Lexer<ParserOutput = string, RendererOutput = string> {
           continue;
         }
 
+        // comment
         if (token = this.tokenizer.comment(src)) {
+          src = src.substring(token.raw.length);
+          tokens.push(token);
+          continue;
+        }
+
+        // newline
+        if (token = this.tokenizer.newline(src)) {
           src = src.substring(token.raw.length);
           tokens.push(token);
           continue;

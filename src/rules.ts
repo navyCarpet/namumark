@@ -80,7 +80,6 @@ export const other = {
   listItemRegex: (bull: string) => new RegExp(`^ ${bull} ?`),
   nextBulletRegex: (indent: number) => new RegExp(`^ {0,${Math.min(3, indent - 1)}}(?:[*+-]|\\d{1,9}[.)])((?:[ \t][^\\n]*)?(?:\\n|$))`),
   endInlineRegex: (start: string) => new RegExp(`^(?:${escapeRegExp(start)}|\\n)`),
-  inlineText: (end: RegExp) => edit(/^[\s\S](?:(?!end)[^\\_\^,\-~\[{'#\n])*/).replace('end', end).getRegex()
 };
 
 /**
@@ -122,23 +121,62 @@ type BlockKeys = keyof typeof blockNormal;
  * Normal Inline Grammar
  */
 
+const comment = /^##([^\n]*(?:\n|$))/;
+const escape = /^\\(.)/;
+const bracesLDelim = /^{{{/;
+const bracesRDelim = edit(/^(?:}}}|heading)/)
+  .replace('heading', heading)
+  .getRegex();
+const literalRDelim = /^}}}/;
+const newline = /^\n/;
+const linkLDelim = /^\[\[/;
+const linkPipe = /^(?:\\.|[^|\]\\\n])*/;
+const linkRDelim = /^\]\]/;
+const footnote = /^\[\*([^ \]]*)/;
+const macro = /^\[(.+?)(?:\(((?:\\.|[^\\])*?)\))?(?<!\\)\]/;
+const sup = /^(?:\^\^\^|\^\^)/;
+const sub = /^(?:,,,|,,)/;
+const strong = /^(?:''')/;
+const em = /^(?:'')/;
+const del = /^(?:~~~|\-\-\-|~~|\-\-)/;
+const underline = /^(?:___|__)/;
+const inlineText = (end: RegExp) => edit(/^[\s\S](?:(?!end|comment|escape|bracesLDelim|newline|\[|sup|sub|strong|em|del|underline)[\s\S])*/)
+  .replace('end', end)
+  .replace('comment', comment)
+  .replace('escape', escape)
+  .replace('bracesLDelim', bracesLDelim)
+  .replace('newline', newline)
+  .replace('sup', sup)
+  .replace('sub', sub)
+  .replace('strong', strong)
+  .replace('em', em)
+  .replace('del', del)
+  .replace('underline', underline)
+  .getRegex()
+
 const inlineNormal = {
-  comment: /^##([^\n]*(?:\n|$))/,
-  escape: /^\\(.)/,
-  bracesLDelim: /^{{{/,
-  bracesRDelim: /^}}}/,
-  newline: /^\n/,
-  linkLDelim: /^\[\[/,
-  linkPipe: /(?:\\.|[^|\]\\\n])*/,
-  linkRDelim: /^\]\]/,
-  footnote: /^\[\*([^ \]]*)/,
-  macro: /^\[(.+?)(?:\(((?:\\.|[^\\])*?)\))?(?<!\\)\]/,
-  sup: /^(?:\^\^\^|\^\^)/,
-  sub: /^(?:,,,|,,)/,
-  strong: /^(?:''')/,
-  em: /^(?:'')/,
-  del: /^(?:~~~|\-\-\-|~~|\-\-)/,
-  underline: /^(?:___|__)/
+  comment,
+  escape,
+  bracesLDelim,
+  bracesRDelim,
+  literalRDelim,
+  newline,
+  linkLDelim,
+  linkPipe,
+  linkRDelim,
+  footnote,
+  macro,
+  sup,
+  sub,
+  strong,
+  em,
+  del,
+  underline,
+  inlineText,
+  inLiteralText: (end: RegExp) => edit(/^[\s\S](?:(?!end|bracesLDelim)[\s\S])*/)
+  .replace('end', end)
+  .replace('bracesLDelim', bracesLDelim)
+  .getRegex()
 };
 
 type InlineKeys = keyof typeof inlineNormal;
@@ -154,5 +192,5 @@ export const inline = inlineNormal;
 export interface Rules {
   other: typeof other
   block: Record<BlockKeys, RegExp>
-  inline: Record<InlineKeys, RegExp>
+  inline: typeof inlineNormal
 }

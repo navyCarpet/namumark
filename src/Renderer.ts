@@ -151,7 +151,7 @@ export class _Renderer<ParserOutput = string, RendererOutput = string> {
   }
 
   folding({ text, tokens }: Tokens.Folding): RendererOutput {
-    return `<details><summary>${text}</summary><div>${this.parser.parse(tokens)}</div></details>` as RendererOutput;
+    return `<details class="wiki-folding"><summary>${text}</summary><div>${this.parser.parse(tokens)}</div></details>` as RendererOutput;
   }
 
   color({ style, tokens }: Tokens.Color): RendererOutput {
