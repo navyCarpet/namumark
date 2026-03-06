@@ -393,18 +393,18 @@ export class _Tokenizer<ParserOutput = string, RendererOutput = string> {
           tokens,
         };
       }
-    } else {
-      this.lexer.state.inLiteral = true;
-      let inline = this.lexer.inlineTokens(src, this.rules.inline.literalRDelim);
-      this.lexer.state.inLiteral = false;
-      src = src.substring(inline.raw.length);
-      if (!src.startsWith('}}}')) return;
-      return {
-        type: "literal",
-        raw: "{{{" + inline.raw + "}}}",
-        text: inline.raw,
-      };
     }
+
+    this.lexer.state.inLiteral = true;
+    let inline = this.lexer.inlineTokens(src, this.rules.inline.literalRDelim);
+    this.lexer.state.inLiteral = false;
+    src = src.substring(inline.raw.length);
+    if (!src.startsWith('}}}')) return;
+    return {
+      type: "literal",
+      raw: "{{{" + inline.raw + "}}}",
+      text: inline.raw,
+    };
   }
 
   link(src: string): Tokens.Link | undefined {
