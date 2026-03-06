@@ -395,9 +395,10 @@ export class _Tokenizer<ParserOutput = string, RendererOutput = string> {
       }
     }
 
+    const prevInLiteral = this.lexer.state.inLiteral;
     this.lexer.state.inLiteral = true;
     let inline = this.lexer.inlineTokens(src, this.rules.inline.literalRDelim);
-    this.lexer.state.inLiteral = false;
+    this.lexer.state.inLiteral = prevInLiteral;
     src = src.substring(inline.raw.length);
     if (!src.startsWith('}}}')) return;
     return {

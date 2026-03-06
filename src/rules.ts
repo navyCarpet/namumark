@@ -66,7 +66,7 @@ export const other = {
   escapeTestNoEncode: /[<>"']|&(?!(#\d{1,7}|#[Xx][a-fA-F0-9]{1,6}|\w+);)/,
   escapeReplaceNoEncode: /[<>"']|&(?!(#\d{1,7}|#[Xx][a-fA-F0-9]{1,6}|\w+);)/g,
   unescapeTest: /&(#(?:\d+)|(?:#x[0-9A-Fa-f]+)|(?:\w+));?/ig,
-  caret: /(^|[^\[])\^/g,
+  caret: /(^|[^\[\\])\^/g,
   percentDecode: /%25/g,
   findPipe: /\|\|/g,
   splitPipe: / \|\|/,
