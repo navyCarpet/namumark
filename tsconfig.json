@@ -1,17 +1,23 @@
 {
   "compilerOptions": {
-    "target": "es2022",
-    "module": "NodeNext",
+    "target": "es2024",
+    "lib": ["es2024"],
+    "module": "nodenext",
     "isolatedModules": true,
     "strict": true,
     "verbatimModuleSyntax": true,
     "noEmit": true,
-    "allowSyntheticDefaultImports": true,
-    "moduleResolution": "NodeNext",
+    "moduleResolution": "nodenext",
     "allowImportingTsExtensions": true,
-    "sourceMap": false
+    "skipLibCheck": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true
   },
   "include": [
-    "src/*.ts"
+    "src/**/*.ts",
+    "test/**/*.ts",
+    "tsdown.config.ts",
+    "vitest.config.ts"
   ]
 }

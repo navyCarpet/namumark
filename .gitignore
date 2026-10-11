@@ -1,11 +1,4 @@
-.DS_Store
-.vercel
 .vscode
-node_modules/
-test/compiled_tests
-public
+.scratch
 lib
-docs/LICENSE.md
-vuln.js
-man/marked.1
-asdf
+node_modules/

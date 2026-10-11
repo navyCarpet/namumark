@@ -2,15 +2,20 @@
   "name": "namumark",
   "version": "1.0.0-dev.2",
   "description": "A namumark parser",
-  "main": "./lib/marked.esm.js",
-  "module": "./lib/marked.esm.js",
-  "browser": "./lib/marked.umd.js",
-  "types": "./lib/marked.d.ts",
+  "main": "./lib/namumark.esm.js",
+  "module": "./lib/namumark.esm.js",
+  "types": "./lib/namumark.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/namumark.d.ts",
+      "import": "./lib/namumark.esm.js",
+      "default": "./lib/namumark.esm.js"
+    },
+    "./package.json": "./package.json"
+  },
   "scripts": {
     "ci": "npm run build && npm run test",
-    "build": "npm run build:esbuild && npm run build:types",
-    "build:esbuild": "node esbuild.config.js",
-    "build:types": "tsc && dts-bundle-generator --export-referenced-types --project tsconfig.json -o lib/marked.d.ts src/marked.ts",
+    "build": "tsc && tsdown",
     "test": "vitest run"
   },
   "repository": {
@@ -25,30 +30,49 @@
     "namuwiki",
     "theseed"
   ],
-  "tags": [
-    "namumark",
-    "namuwiki",
-    "theseed"
-  ],
   "private": false,
   "author": "navyCarpet",
   "license": "MIT",
   "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
   "bugs": {
     "url": "https://github.com/navyCarpet/namumark/issues"
   },
   "homepage": "https://github.com/navyCarpet/namumark#readme",
-  "devDependencies": {
-    "@types/node": "^24.9.1",
-    "dts-bundle-generator": "^9.5.1",
-    "esbuild": "^0.25.11",
-    "esbuild-plugin-umd-wrapper": "^3.0.0",
-    "highlight.js": "^11.11.1",
-    "jsdom": "^28.1.0",
-    "typescript": "^5.9.3",
-    "vitest": "^4.0.18"
-  },
   "dependencies": {
-    "validate-color": "^2.2.4"
+    "highlight.js": "11.11.1",
+    "katex": "0.17.0",
+    "sanitize-html": "2.17.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.12.4",
+    "@types/sanitize-html": "^2.13.0",
+    "jsdom": "^29.1.1",
+    "release-it": "^20.2.1",
+    "tsdown": "^0.23.0",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.11"
+  },
+  "release-it": {
+    "preReleaseId": "dev",
+    "hooks": {
+      "after:bump": "npm run ci"
+    },
+    "git": {
+      "commit": true,
+      "tag": true,
+      "push": true,
+      "commitMessage": "chore: release v${version}"
+    },
+    "github": {
+      "release": true,
+      "releaseName": "v${version}"
+    },
+    "npm": {
+      "skipChecks": true,
+      "publish": true
+    }
   }
 }

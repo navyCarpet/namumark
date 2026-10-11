@@ -1,18 +1,16 @@
-import type { MarkedOptions } from './MarkedOptions.ts';
+import type { NamumarkOptions } from "./Options.ts";
 
-/**
- * Gets the original marked default options.
- */
-export function _getDefaults<ParserOutput = string, RendererOutput = string>(): MarkedOptions<ParserOutput, RendererOutput> {
+export function _getDefaults(): NamumarkOptions {
   return {
-    async: true,
+    async: false,
+    silent: false,
     discuss: false,
     walkTokens: null,
   };
 }
 
-export let _defaults: MarkedOptions<any, any> = _getDefaults();
+export let _defaults: NamumarkOptions = _getDefaults();
 
-export function changeDefaults<ParserOutput = string, RendererOutput = string>(newDefaults: MarkedOptions<ParserOutput, RendererOutput>) {
+export function changeDefaults(newDefaults: NamumarkOptions) {
   _defaults = newDefaults;
 }
